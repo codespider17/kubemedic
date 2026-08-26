@@ -1,0 +1,38 @@
+{
+  "version": "4",
+  "groupKey": "{}:{alertname=\"DemoPodRestarting\", namespace=\"demo\"}",
+  "truncatedAlerts": 0,
+  "status": "firing",
+  "receiver": "kubemedic-webhook",
+  "groupLabels": {
+    "alertname": "DemoPodRestarting",
+    "namespace": "demo"
+  },
+  "commonLabels": {
+    "alertname": "DemoPodRestarting",
+    "namespace": "demo",
+    "severity": "warning"
+  },
+  "commonAnnotations": {
+    "summary": "demo namespace pod is restarting"
+  },
+  "externalURL": "http://alertmanager.monitoring.svc:9093",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "DemoPodRestarting",
+        "namespace": "demo",
+        "pod": "demo-api-7f6d9-example",
+        "severity": "warning"
+      },
+      "annotations": {
+        "summary": "demo pod restarted more than twice"
+      },
+      "startsAt": "2026-08-26T11:30:00+08:00",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://prometheus.monitoring.svc:9090/graph",
+      "fingerprint": "demo-fingerprint-001"
+    }
+  ]
+}

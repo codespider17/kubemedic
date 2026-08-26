@@ -1,0 +1,40 @@
+alertmanager:
+  alertmanagerSpec:
+    retention: 24h
+    alertmanagerConfigSelector:
+      matchLabels:
+        kubemedic: enabled
+    alertmanagerConfigNamespaceSelector:
+      matchLabels:
+        kubemedic-alerts: enabled
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 300m
+        memory: 256Mi
+
+prometheus:
+  prometheusSpec:
+    retention: 6h
+    scrapeInterval: 30s
+    evaluationInterval: 30s
+    resources:
+      requests:
+        cpu: 200m
+        memory: 384Mi
+      limits:
+        cpu: "1"
+        memory: 1024Mi
+    storageSpec: {}
+
+grafana:
+  enabled: false
+
+kubeEtcd:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false

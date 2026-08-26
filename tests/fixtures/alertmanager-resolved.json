@@ -1,0 +1,21 @@
+{
+  "status": "resolved",
+  "receiver": "kubemedic-webhook",
+  "alerts": [
+    {
+      "status": "resolved",
+      "labels": {
+        "alertname": "DemoPodRestarting",
+        "namespace": "demo",
+        "pod": "demo-api-7f6d9-example",
+        "severity": "warning"
+      },
+      "annotations": {
+        "summary": "demo pod stopped restarting"
+      },
+      "startsAt": "2026-08-26T11:00:00+08:00",
+      "endsAt": "2026-08-26T11:30:00+08:00",
+      "fingerprint": "demo-fingerprint-001"
+    }
+  ]
+}
