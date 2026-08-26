@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubemedic
+  labels:
+    app.kubernetes.io/name: kubemedic
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kubemedic
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kubemedic
+    spec:
+      serviceAccountName: kubemedic
+      automountServiceAccountToken: true
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: kubemedic
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 5001
+          env:
+            - name: KUBEMEDIC_DB_PATH
+              value: /data/kubemedic.db
+            - name: KUBEMEDIC_CLUSTER_ID
+              value: k3s-local
+            - name: KUBEMEDIC_AUTO_PIPELINE
+              value: "true"
+            - name: PROMETHEUS_URL
+              value: {{ .Values.prometheusUrl | quote }}
+            - name: DEEPSEEK_BASE_URL
+              value: {{ .Values.deepseek.baseUrl | quote }}
+            - name: DEEPSEEK_MODEL
+              value: {{ .Values.deepseek.model | quote }}
+            - name: DEEPSEEK_TIMEOUT_SECONDS
+              value: "30"
+            - name: DEEPSEEK_MAX_RETRIES
+              value: "2"
+            - name: DEEPSEEK_MAX_TOKENS
+              value: "1800"
+            - name: DEEPSEEK_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.deepseek.secretName }}
+                  key: {{ .Values.deepseek.secretKey }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: kubemedic-data
+        - name: tmp
+          emptyDir: {}

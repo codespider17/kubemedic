@@ -1,0 +1,24 @@
+image:
+  repository: docker.io/library/kubemedic
+  tag: "0.6.0"
+  pullPolicy: IfNotPresent
+
+deepseek:
+  secretName: deepseek-api
+  secretKey: DEEPSEEK_API_KEY
+  model: deepseek-v4-flash
+  baseUrl: https://api.deepseek.com
+
+prometheusUrl: http://monitoring-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+
+persistence:
+  storageClassName: local-path
+  size: 512Mi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: kubemedic
+description: Evidence-driven Kubernetes incident RCA service
+type: application
+version: 0.1.0
+appVersion: "0.6.0"

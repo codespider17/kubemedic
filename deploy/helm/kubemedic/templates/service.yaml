@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubemedic
+  labels:
+    app.kubernetes.io/name: kubemedic
+spec:
+  selector:
+    app.kubernetes.io/name: kubemedic
+  ports:
+    - name: http
+      port: 5001
+      targetPort: http

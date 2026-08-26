@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kubemedic-pipeline-test
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: kubemedic-pipeline-test
+      interval: 15s
+      rules:
+        - alert: KubeMedicPipelineTest
+          expr: kube_pod_status_ready{namespace="demo",condition="true"} == 1
+          for: 30s
+          labels:
+            severity: warning
+            kubemedic: enabled
+          annotations:
+            summary: synthetic alert used to verify KubeMedic pipeline

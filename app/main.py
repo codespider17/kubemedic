@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.responses import Response
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from app.api.alerts import router as alerts_router
 from app.api.analysis import router as analysis_router
@@ -18,7 +20,7 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="KubeMedic",
-    version="0.5.0",
+    version="0.6.0",
     description="Kubernetes incident investigation service",
     lifespan=lifespan,
 )
@@ -42,3 +44,8 @@ async def healthz() -> dict[str, str]:
 @app.get("/readyz")
 async def readyz() -> dict[str, str]:
     return {"status": "ready"}
+
+
+@app.get("/metrics", include_in_schema=False)
+def metrics() -> Response:
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)

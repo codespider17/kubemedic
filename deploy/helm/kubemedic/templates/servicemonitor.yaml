@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kubemedic
+  labels:
+    release: monitoring
+spec:
+  namespaceSelector:
+    matchNames: ["kubemedic"]
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kubemedic
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
