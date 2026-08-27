@@ -1,0 +1,10 @@
+{
+  "namespace": "fault-lab",
+  "workload_kind": "deployment",
+  "workload_name": "crashloop-demo",
+  "label_selector": "app=crashloop-demo",
+  "container_name": "crashloop",
+  "alert_name": "KubeMedicCrashLoopBackOff",
+  "rule_namespace": "monitoring",
+  "rule_name": "kubemedic-f01-crashloop"
+}

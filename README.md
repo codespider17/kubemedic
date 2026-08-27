@@ -284,3 +284,13 @@ F01 CrashLoopBackOff 自动评测结果：
 - 最终结果：`passed=true`
 
 当前 M10 完成的是对已有故障实验进行无副作用的自动评分。自动注入、等待告警、恢复和清理的实验编排将在后续阶段实现。
+
+## M10 第二阶段：一键故障实验编排
+
+新增通用场景编排器 `fault-lab/run_scenario.py`，通过场景级 `runner.json` 明确描述 Kubernetes Workload、PrometheusRule、告警名称和资源选择器，自动执行健康基线、规则加载、故障注入、告警等待、Incident 分析、工作负载恢复、自动评测和资源清理。
+
+F01 自动实验 `F01-20260827T082300Z` 在约 142 秒内完成全部 11 个阶段，生成 Incident `inc-f6ee4ddb5bb4457c`。评测器采集并校验本轮 6 条 Evidence，根因 `CONTAINER_CRASH_LOOP_BACKOFF` 的 Top-1、Top-3、证据完整性、周期一致性和恢复状态全部通过。
+
+本轮 DeepSeek 返回 `finish_reason=length`，系统自动进入 `rules_fallback`，由规则 Analyzer 完成根因判断。该结果验证了模型失败时的确定性降级能力，但不能视为本轮 DeepSeek 成功；由于 Provider 未返回可用量统计，Token 字段保持为 `null`。
+
+实验完成后，Prometheus和Alertmanager活动告警数均为0，F01 Deployment和PrometheusRule均已删除。当前完整测试共38个。

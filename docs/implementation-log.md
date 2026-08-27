@@ -52,3 +52,17 @@ Prometheus 测试告警成功进入 firing，Alertmanager 运行配置成功加�
 评测报告记录模型 `deepseek-v4-flash` 的实际 Token 用量为 7485，最终结果为 `passed=true`。完整回归共 31 个测试通过，Ruff 和依赖完整性检查通过。
 
 本阶段只实现对已有实验结果的自动评分，不包含自动故障注入和恢复编排。
+
+## 2026-08-27 M10第二阶段：一键故障实验编排
+
+新增 `app/evaluation_runner.py`、`fault-lab/run_scenario.py`、F01 `runner.json` 和 `tests/test_evaluation_runner.py`，实现带时间边界的Incident选择、阶段化运行结果、超时控制、失败紧急恢复和成功后资源清理。
+
+修复Ruff发现的代码规范问题：配置根对象类型错误改为抛出 `TypeError`；`Callable`改从`collections.abc`导入；泛型等待函数改为Python 3.12+的 `def wait_for_value[T]` 语法。Ruff、依赖检查和38个测试全部通过，无副作用预检通过。
+
+真实运行 `F01-20260827T082300Z`，生成Incident `inc-f6ee4ddb5bb4457c`。从启动到结果保存约142秒，11个阶段全部通过；Prometheus进入firing约65秒，Incident等待到REPORTED约25秒，Incident内部分析周期为18312毫秒。
+
+本轮Evidence共6条，规则Analyzer命中 `CONTAINER_CRASH_LOOP_BACKOFF`，Top-1、Top-3、证据完整性、周期一致性和恢复状态全部通过。
+
+DeepSeek返回 `TerminalDeepSeekError: unexpected finish_reason=length`，系统进入 `rules_fallback`。因此自动闭环判定通过，但本轮不能记录为DeepSeek成功，Token字段保持为 `null`。
+
+实验完成后Prometheus活动告警、Alertmanager活动告警、F01 Deployment和PrometheusRule数量均为0，资源清理验证通过。
