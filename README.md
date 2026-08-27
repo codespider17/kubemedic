@@ -129,18 +129,18 @@ uvicorn app.main:app --host 127.0.0.1 --port 5001
 
 ```bash
 podman build \
-  -t docker.io/library/kubemedic:0.6.1 \
+  -t docker.io/library/kubemedic:0.6.2 \
   .
 
 podman save \
   --format docker-archive \
-  -o /tmp/kubemedic-0.6.1.tar \
-  docker.io/library/kubemedic:0.6.1
+  -o /tmp/kubemedic-0.6.2.tar \
+  docker.io/library/kubemedic:0.6.2
 
-k3s ctr images import /tmp/kubemedic-0.6.1.tar
+k3s ctr images import /tmp/kubemedic-0.6.2.tar
 
 k3s ctr images list |
-  grep 'docker.io/library/kubemedic:0.6.1'
+  grep 'docker.io/library/kubemedic:0.6.2'
 ```
 
 该方式适合无法稳定访问 Docker Hub 的本地实验环境。Helm Chart 使用 `IfNotPresent`，优先使用已经导入 K3s containerd 的镜像。
@@ -294,3 +294,13 @@ F01 自动实验 `F01-20260827T082300Z` 在约 142 秒内完成全部 11 个阶�
 本轮 DeepSeek 返回 `finish_reason=length`，系统自动进入 `rules_fallback`，由规则 Analyzer 完成根因判断。该结果验证了模型失败时的确定性降级能力，但不能视为本轮 DeepSeek 成功；由于 Provider 未返回可用量统计，Token 字段保持为 `null`。
 
 实验完成后，Prometheus和Alertmanager活动告警数均为0，F01 Deployment和PrometheusRule均已删除。当前完整测试共38个。
+
+## DeepSeek长度优化与成功复测
+
+针对自动实验中出现的 `finish_reason=length`，在 `kubemedic:0.6.2` 中显式关闭DeepSeek v4思考模式，将输出上限调整为2400 Token，并对Evidence数量、原文长度、Analyzer引用、根因、动作和unknowns进行预算约束。
+
+F01自动实验 `F01-20260827T083839Z` 生成Incident `inc-4e2377a049e44427`，11个阶段全部通过。DeepSeek分析耗时4633毫秒，使用2517个Prompt Token和361个Completion Token，总计2878 Token；`analysis_mode=deepseek`、`provider_error=null`。
+
+本轮6条Evidence全部属于当前分析周期，根因 `CONTAINER_CRASH_LOOP_BACKOFF` 的Top-1、Top-3、证据完整性和周期一致性全部通过。实验完成后，Prometheus活动告警、Alertmanager活动告警、F01 Deployment和PrometheusRule数量均为0。
+
+项目同时保留两类真实结果：`F01-20260827T082300Z`验证模型长度截断时的规则降级路径，`F01-20260827T083839Z`验证优化后的DeepSeek成功路径。当前完整测试共42个。

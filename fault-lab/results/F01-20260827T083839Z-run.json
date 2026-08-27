@@ -1,0 +1,265 @@
+{
+  "run_id": "F01-20260827T083839Z",
+  "scenario_id": "F01",
+  "started_at": "2026-08-27T08:38:39.005706+00:00",
+  "finished_at": "2026-08-27T08:41:15.593040+00:00",
+  "incident_id": "inc-4e2377a049e44427",
+  "phases": [
+    {
+      "name": "preflight",
+      "started_at": "2026-08-27T08:38:39.005811+00:00",
+      "finished_at": "2026-08-27T08:38:39.275392+00:00",
+      "passed": true,
+      "detail": {
+        "kubernetes_context": "default",
+        "namespace": "fault-lab",
+        "kubemedic_health": {
+          "status": "ok"
+        },
+        "prometheus_status": "success",
+        "alertmanager_cluster_status": "disabled"
+      }
+    },
+    {
+      "name": "prepare_baseline",
+      "started_at": "2026-08-27T08:38:39.275461+00:00",
+      "finished_at": "2026-08-27T08:38:47.900823+00:00",
+      "passed": true,
+      "detail": {
+        "namespace": "namespace/fault-lab unchanged",
+        "alertmanager_route": "alertmanagerconfig.monitoring.coreos.com/kubemedic unchanged",
+        "recover": "deployment.apps/crashloop-demo created",
+        "rollout": "Waiting for deployment \"crashloop-demo\" rollout to finish: 0 out of 1 new replicas have been updated...\nWaiting for deployment \"crashloop-demo\" rollout to finish: 0 of 1 updated replicas are available...\ndeployment \"crashloop-demo\" successfully rolled out",
+        "alerts": {
+          "prometheus_alerts": 0,
+          "alertmanager_alerts": 0
+        }
+      }
+    },
+    {
+      "name": "install_rule",
+      "started_at": "2026-08-27T08:38:47.900852+00:00",
+      "finished_at": "2026-08-27T08:39:23.128593+00:00",
+      "passed": true,
+      "detail": {
+        "apply": "prometheusrule.monitoring.coreos.com/kubemedic-f01-crashloop created",
+        "rule": {
+          "name": "KubeMedicCrashLoopBackOff",
+          "state": "unknown",
+          "health": "unknown",
+          "last_error": null
+        }
+      }
+    },
+    {
+      "name": "inject_fault",
+      "started_at": "2026-08-27T08:39:23.128630+00:00",
+      "finished_at": "2026-08-27T08:39:23.304712+00:00",
+      "passed": true,
+      "detail": {
+        "fault_started_at": "2026-08-27T08:39:23.128654+00:00",
+        "apply": "deployment.apps/crashloop-demo configured"
+      }
+    },
+    {
+      "name": "prometheus_firing",
+      "started_at": "2026-08-27T08:39:23.304797+00:00",
+      "finished_at": "2026-08-27T08:40:28.327790+00:00",
+      "passed": true,
+      "detail": {
+        "state": "firing",
+        "labels": {
+          "alertname": "KubeMedicCrashLoopBackOff",
+          "container": "crashloop",
+          "fault_case": "F01",
+          "kubemedic": "enabled",
+          "namespace": "fault-lab",
+          "pod": "crashloop-demo-68c98b7975-qnnbk",
+          "severity": "warning",
+          "workload": "crashloop-demo",
+          "workload_kind": "Deployment"
+        },
+        "active_at": "2026-08-27T08:40:09.805556203Z"
+      }
+    },
+    {
+      "name": "alertmanager_routed",
+      "started_at": "2026-08-27T08:40:28.327854+00:00",
+      "finished_at": "2026-08-27T08:40:28.329266+00:00",
+      "passed": true,
+      "detail": {
+        "state": "active",
+        "receivers": [
+          "fault-lab/kubemedic/kubemedic-webhook"
+        ],
+        "labels": {
+          "alertname": "KubeMedicCrashLoopBackOff",
+          "container": "crashloop",
+          "fault_case": "F01",
+          "kubemedic": "enabled",
+          "namespace": "fault-lab",
+          "pod": "crashloop-demo-68c98b7975-qnnbk",
+          "prometheus": "monitoring/monitoring-kube-prometheus-prometheus",
+          "severity": "warning",
+          "workload": "crashloop-demo",
+          "workload_kind": "Deployment"
+        }
+      }
+    },
+    {
+      "name": "incident_reported",
+      "started_at": "2026-08-27T08:40:28.329290+00:00",
+      "finished_at": "2026-08-27T08:40:38.360112+00:00",
+      "passed": true,
+      "detail": {
+        "id": "inc-4e2377a049e44427",
+        "fingerprint": "eda60b0d08f3dedb09f972360bf2292adecb776e9baca5e511c707c7a3ed5599",
+        "status": "REPORTED",
+        "alert_name": "KubeMedicCrashLoopBackOff",
+        "namespace": "fault-lab",
+        "workload": "crashloop-demo",
+        "pod": "crashloop-demo-68c98b7975-qnnbk",
+        "severity": "warning",
+        "occurrence_count": 1,
+        "first_seen": "2026-08-27T08:40:29.813070+00:00",
+        "last_seen": "2026-08-27T08:40:29.813070+00:00",
+        "resolved_at": null,
+        "created_at": "2026-08-27T08:40:29.813070+00:00",
+        "updated_at": "2026-08-27T08:40:34.445625+00:00"
+      }
+    },
+    {
+      "name": "recover_workload",
+      "started_at": "2026-08-27T08:40:38.360133+00:00",
+      "finished_at": "2026-08-27T08:40:45.198210+00:00",
+      "passed": true,
+      "detail": {
+        "apply": "deployment.apps/crashloop-demo configured",
+        "rollout": "Waiting for deployment \"crashloop-demo\" rollout to finish: 0 out of 1 new replicas have been updated...\nWaiting for deployment \"crashloop-demo\" rollout to finish: 1 old replicas are pending termination...\nWaiting for deployment \"crashloop-demo\" rollout to finish: 1 old replicas are pending termination...\nWaiting for deployment \"crashloop-demo\" rollout to finish: 1 old replicas are pending termination...\ndeployment \"crashloop-demo\" successfully rolled out"
+      }
+    },
+    {
+      "name": "wait_recovered",
+      "started_at": "2026-08-27T08:40:45.198275+00:00",
+      "finished_at": "2026-08-27T08:41:15.231376+00:00",
+      "passed": true,
+      "detail": {
+        "external_alerts": {
+          "prometheus_alerts": 0,
+          "alertmanager_alerts": 0
+        },
+        "incident_status": "RESOLVED",
+        "resolved_at": "2026-08-27T08:41:14.823736+00:00"
+      }
+    },
+    {
+      "name": "evaluate",
+      "started_at": "2026-08-27T08:41:15.231408+00:00",
+      "finished_at": "2026-08-27T08:41:15.254618+00:00",
+      "passed": true,
+      "detail": {
+        "scenario_id": "F01",
+        "scenario_name": "CrashLoopBackOff",
+        "incident_id": "inc-4e2377a049e44427",
+        "evaluated_at": "2026-08-27T08:41:15.254559+00:00",
+        "cycle_started_at": "2026-08-27T08:40:29.813070+00:00",
+        "cycle_reported_at": "2026-08-27T08:40:34.445625+00:00",
+        "cycle_consistent": true,
+        "alert_detected": true,
+        "namespace_matches": true,
+        "expected_root_cause_code": "CONTAINER_CRASH_LOOP_BACKOFF",
+        "predicted_root_cause_codes": [
+          "CONTAINER_CRASH_LOOP_BACKOFF"
+        ],
+        "top1_hit": true,
+        "top3_hit": true,
+        "required_evidence_sources": [
+          "kubernetes_events",
+          "pod_logs",
+          "pod_status"
+        ],
+        "actual_evidence_sources": [
+          "kubernetes_events",
+          "owner_chain",
+          "pod_logs",
+          "pod_status",
+          "prometheus_query"
+        ],
+        "missing_evidence_sources": [],
+        "evidence_complete": true,
+        "incident_evidence_count": 6,
+        "evidence_count": 6,
+        "analysis_duration_ms": 4633,
+        "report_created_at": "2026-08-27T08:40:34.438703+00:00",
+        "analysis_mode": "deepseek",
+        "model": "deepseek-v4-flash",
+        "prompt_tokens": 2517,
+        "completion_tokens": 361,
+        "total_tokens": 2878,
+        "provider_error": null,
+        "tool_calls": null,
+        "unsafe_calls_rejected": null,
+        "recovered": true,
+        "passed": true
+      }
+    },
+    {
+      "name": "cleanup",
+      "started_at": "2026-08-27T08:41:15.254660+00:00",
+      "finished_at": "2026-08-27T08:41:15.592983+00:00",
+      "passed": true,
+      "detail": {
+        "skipped": false,
+        "rule": "prometheusrule.monitoring.coreos.com \"kubemedic-f01-crashloop\" deleted from monitoring namespace",
+        "workload": "deployment.apps \"crashloop-demo\" deleted from fault-lab namespace"
+      }
+    }
+  ],
+  "evaluation": {
+    "scenario_id": "F01",
+    "scenario_name": "CrashLoopBackOff",
+    "incident_id": "inc-4e2377a049e44427",
+    "evaluated_at": "2026-08-27T08:41:15.254559+00:00",
+    "cycle_started_at": "2026-08-27T08:40:29.813070+00:00",
+    "cycle_reported_at": "2026-08-27T08:40:34.445625+00:00",
+    "cycle_consistent": true,
+    "alert_detected": true,
+    "namespace_matches": true,
+    "expected_root_cause_code": "CONTAINER_CRASH_LOOP_BACKOFF",
+    "predicted_root_cause_codes": [
+      "CONTAINER_CRASH_LOOP_BACKOFF"
+    ],
+    "top1_hit": true,
+    "top3_hit": true,
+    "required_evidence_sources": [
+      "kubernetes_events",
+      "pod_logs",
+      "pod_status"
+    ],
+    "actual_evidence_sources": [
+      "kubernetes_events",
+      "owner_chain",
+      "pod_logs",
+      "pod_status",
+      "prometheus_query"
+    ],
+    "missing_evidence_sources": [],
+    "evidence_complete": true,
+    "incident_evidence_count": 6,
+    "evidence_count": 6,
+    "analysis_duration_ms": 4633,
+    "report_created_at": "2026-08-27T08:40:34.438703+00:00",
+    "analysis_mode": "deepseek",
+    "model": "deepseek-v4-flash",
+    "prompt_tokens": 2517,
+    "completion_tokens": 361,
+    "total_tokens": 2878,
+    "provider_error": null,
+    "tool_calls": null,
+    "unsafe_calls_rejected": null,
+    "recovered": true,
+    "passed": true
+  },
+  "error": null,
+  "passed": true
+}

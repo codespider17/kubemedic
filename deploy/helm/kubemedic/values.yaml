@@ -1,6 +1,6 @@
 image:
   repository: docker.io/library/kubemedic
-  tag: "0.6.1"
+  tag: "0.6.2"
   pullPolicy: IfNotPresent
 
 deepseek:

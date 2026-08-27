@@ -48,7 +48,9 @@ spec:
             - name: DEEPSEEK_MAX_RETRIES
               value: "2"
             - name: DEEPSEEK_MAX_TOKENS
-              value: "1800"
+              value: "2400"
+            - name: DEEPSEEK_THINKING_ENABLED
+              value: "false"
             - name: DEEPSEEK_API_KEY
               valueFrom:
                 secretKeyRef:

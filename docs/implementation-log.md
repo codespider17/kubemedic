@@ -66,3 +66,15 @@ Prometheus 测试告警成功进入 firing，Alertmanager 运行配置成功加�
 DeepSeek返回 `TerminalDeepSeekError: unexpected finish_reason=length`，系统进入 `rules_fallback`。因此自动闭环判定通过，但本轮不能记录为DeepSeek成功，Token字段保持为 `null`。
 
 实验完成后Prometheus活动告警、Alertmanager活动告警、F01 Deployment和PrometheusRule数量均为0，资源清理验证通过。
+
+## 2026-08-27 DeepSeek长度优化与成功复测
+
+首次一键F01实验中，DeepSeek返回 `finish_reason=length`，系统通过 `rules_fallback` 完成根因识别和恢复。根据真实错误，缩减Prompt证据预算、限制结构化输出长度、将 `DEEPSEEK_MAX_TOKENS` 从1800调整为2400，并通过 `DEEPSEEK_THINKING_ENABLED=false` 显式关闭DeepSeek v4思考模式。
+
+新增Provider和Prompt预算测试，DeepSeek相关测试8个通过，项目完整测试42个通过；Helm lint、模板渲染和依赖检查通过。发布镜像 `docker.io/library/kubemedic:0.6.2` 并完成Helm升级。
+
+真实复测run ID为 `F01-20260827T083839Z`，Incident ID为 `inc-4e2377a049e44427`。11个阶段全部通过，DeepSeek分析耗时4633毫秒；Prompt Token为2517，Completion Token为361，总Token为2878。
+
+本轮 `analysis_mode=deepseek`、模型为 `deepseek-v4-flash`、`provider_error=null`。6条Evidence、根因Top-1、Top-3、证据完整性、周期一致性及恢复状态全部通过。
+
+实验结束后Prometheus活动告警、Alertmanager活动告警、F01 Deployment和PrometheusRule数量均为0。项目现已同时验证DeepSeek成功路径和模型失败时的规则降级路径。
