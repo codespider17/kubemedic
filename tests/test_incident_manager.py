@@ -105,3 +105,54 @@ def test_state_machine_accepts_and_rejects_transitions(client) -> None:
             IncidentStatus.RECEIVED,
             "invalid backward transition",
         )
+def test_explicit_workload_label_is_preferred(client) -> None:
+    payload = make_payload(
+        "workload-label-pod",
+        "ExplicitWorkloadLabelTest",
+    )
+    labels = payload["alerts"][0]["labels"]
+    labels.update(
+        {
+            "workload": "crashloop-demo",
+            "workload_kind": "Deployment",
+            "job": "kube-state-metrics",
+        }
+    )
+
+    response = client.post(
+        "/api/v1/alerts/webhook",
+        json=payload,
+    )
+    assert response.status_code == 200
+
+    incident_id = response.json()["incident_ids"][0]
+    detail = client.get(
+        f"/api/v1/incidents/{incident_id}"
+    ).json()
+
+    assert detail["workload"] == "crashloop-demo"
+    assert detail["pod"] == "workload-label-pod"
+
+
+def test_prometheus_job_label_is_not_workload(client) -> None:
+    payload = make_payload(
+        "prometheus-job-pod",
+        "PrometheusJobLabelTest",
+    )
+    payload["alerts"][0]["labels"]["job"] = (
+        "kube-state-metrics"
+    )
+
+    response = client.post(
+        "/api/v1/alerts/webhook",
+        json=payload,
+    )
+    assert response.status_code == 200
+
+    incident_id = response.json()["incident_ids"][0]
+    detail = client.get(
+        f"/api/v1/incidents/{incident_id}"
+    ).json()
+
+    assert detail["workload"] == "prometheus-job-pod"
+    assert detail["workload"] != "kube-state-metrics"

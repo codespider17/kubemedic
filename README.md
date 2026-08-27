@@ -6,7 +6,7 @@ KubeMedic 不只是把错误日志转发给大模型。系统会接收真实告�
 
 ## 当前状态
 
-当前已完成 M8：单节点 K3s 环境中的真实告警闭环和 Helm 部署。
+当前已完成 M9：K3s 真实告警闭环、Helm 部署和 F01 CrashLoopBackOff 故障注入评测。
 
 已验证链路：
 
@@ -84,6 +84,10 @@ kubemedic/
 │   ├── helm/kubemedic/     # KubeMedic Helm Chart
 │   ├── rbac/               # 只读 RBAC 基线
 │   └── monitoring-values.yaml
+├── fault-lab/
+│   ├── base/               # 实验命名空间和告警路由
+│   ├── scenarios/          # 可复现故障注入与恢复配置
+│   └── results/            # 脱敏后的实验结果
 ├── docs/
 │   └── implementation-log.md
 ├── tests/
@@ -125,18 +129,18 @@ uvicorn app.main:app --host 127.0.0.1 --port 5001
 
 ```bash
 podman build \
-  -t docker.io/library/kubemedic:0.6.0 \
+  -t docker.io/library/kubemedic:0.6.1 \
   .
 
 podman save \
   --format docker-archive \
-  -o /tmp/kubemedic-0.6.0.tar \
-  docker.io/library/kubemedic:0.6.0
+  -o /tmp/kubemedic-0.6.1.tar \
+  docker.io/library/kubemedic:0.6.1
 
-k3s ctr images import /tmp/kubemedic-0.6.0.tar
+k3s ctr images import /tmp/kubemedic-0.6.1.tar
 
 k3s ctr images list |
-  grep 'docker.io/library/kubemedic:0.6.0'
+  grep 'docker.io/library/kubemedic:0.6.1'
 ```
 
 该方式适合无法稳定访问 Docker Hub 的本地实验环境。Helm Chart 使用 `IfNotPresent`，优先使用已经导入 K3s containerd 的镜像。
@@ -227,7 +231,7 @@ kubectl -n kubemedic port-forward service/kubemedic 5001:5001
 - Incident 自动从 `RECEIVED` 流转到 `REPORTED`。
 - 告警恢复后，同一 Incident 自动变为 `RESOLVED`。
 - KubeMedic Pod 重建后，Incident 和报告仍然存在。
-- Ruff 检查通过，25 个 pytest 全部通过，pip check 与 Helm lint 均通过。
+- Ruff 检查通过，27 个 pytest 全部通过，pip check 与 Helm lint 均通过。
 
 详细的每次实施证据记录在 `docs/implementation-log.md`。
 
@@ -235,7 +239,7 @@ kubectl -n kubemedic port-forward service/kubemedic 5001:5001
 
 - 当前是面向学习、演示和故障实验的单节点 K3s 版本，不宣称生产级高可用。
 - SQLite + RWO PVC 模式固定单副本，不支持水平扩展。
-- M8 使用合成健康告警验证通知链路，真实故障规则命中将在 M9 验证。
+- 当前已完成 F01 CrashLoopBackOff，OOMKilled、ImagePullBackOff、探针失败、调度失败和 Service 无 Endpoint 场景仍待验证。
 - 当前不允许模型直接执行运维命令。
 
 ## Roadmap
@@ -248,6 +252,15 @@ kubectl -n kubemedic port-forward service/kubemedic 5001:5001
 - [x] Helm、只读 RBAC、PVC 和 ServiceMonitor
 - [x] `FIRING -> REPORTED -> RESOLVED` 自动闭环
 - [ ] 受控多轮工具调用与人工确认
-- [ ] CrashLoopBackOff、OOMKilled、ImagePullBackOff 等故障注入
+- [x] CrashLoopBackOff 故障注入、根因分析与恢复验证
+- [ ] OOMKilled、ImagePullBackOff 等故障注入
 - [ ] Top-1、Top-3、耗时和 Token 成本评测
 - [ ] Runbook 知识库与相似案例检索
+
+## M9：CrashLoopBackOff 故障注入评测
+
+已完成 F01 CrashLoopBackOff 真实故障注入和分阶段闭环验证，包括 Prometheus/Alertmanager 告警链路、12 条多源 Evidence、规则 Analyzer 精确根因、DeepSeek 结构化报告、审批型修复建议以及恢复状态验证。
+
+针对 kubelet 指数退避造成的 waiting-reason 指标抖动，告警规则采用精确状态与“异常退出、重启次数、Ready 状态”的复合条件，并归一化动态标签。最终规则持续验证 954 秒，期间未发生错误恢复或重复报告。
+
+修复 Incident workload 标签映射问题并发布 `kubemedic:0.6.1`，完整测试共 27 个。详细证据见 `fault-lab/results/F01-result.md`。

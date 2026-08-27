@@ -1,0 +1,19 @@
+{
+  "scenario_id": "F01",
+  "scenario_name": "CrashLoopBackOff",
+  "expected_alert_name": "KubeMedicCrashLoopBackOff",
+  "expected_namespace": "fault-lab",
+  "expected_workload": "crashloop-demo",
+  "expected_container": "crashloop",
+  "expected_root_cause_code": "CONTAINER_CRASH_LOOP_BACKOFF",
+  "expected_evidence_sources": [
+    "pod_status",
+    "kubernetes_events",
+    "pod_logs"
+  ],
+  "expected_keywords": [
+    "CrashLoopBackOff",
+    "invalid",
+    "flag"
+  ]
+}

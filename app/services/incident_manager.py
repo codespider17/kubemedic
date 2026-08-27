@@ -17,8 +17,14 @@ from app.repositories.database import (
 )
 
 DEFAULT_DEDUP_WINDOW_SECONDS = 600
-WORKLOAD_LABELS = ("deployment", "statefulset", "daemonset", "job")
-
+WORKLOAD_LABELS = (
+    "workload",
+    "deployment",
+    "statefulset",
+    "daemonset",
+    "cronjob",
+    "job_name",
+)
 
 def build_fingerprint(labels: dict[str, str]) -> str:
     workload = next(

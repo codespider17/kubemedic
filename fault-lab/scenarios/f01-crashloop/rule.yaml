@@ -1,0 +1,61 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kubemedic-f01-crashloop
+  namespace: monitoring
+  labels:
+    release: monitoring
+    kubemedic: enabled
+spec:
+  groups:
+    - name: kubemedic-f01-crashloop
+      interval: 15s
+      rules:
+        - alert: KubeMedicCrashLoopBackOff
+          expr: |
+            max by (namespace, pod, container) (
+              kube_pod_container_status_waiting_reason{
+                namespace="fault-lab",
+                container="crashloop",
+                pod=~"crashloop-demo-.*",
+                reason="CrashLoopBackOff"
+              } == 1
+            )
+            or on (namespace, pod, container)
+            (
+              max by (namespace, pod, container) (
+                kube_pod_container_status_last_terminated_reason{
+                  namespace="fault-lab",
+                  container="crashloop",
+                  pod=~"crashloop-demo-.*",
+                  reason="Error"
+                } == 1
+              )
+              and on (namespace, pod, container)
+              max by (namespace, pod, container) (
+                kube_pod_container_status_restarts_total{
+                  namespace="fault-lab",
+                  container="crashloop",
+                  pod=~"crashloop-demo-.*"
+                } >= 3
+              )
+              and on (namespace, pod, container)
+              max by (namespace, pod, container) (
+                kube_pod_container_status_ready{
+                  namespace="fault-lab",
+                  container="crashloop",
+                  pod=~"crashloop-demo-.*"
+                } == 0
+              )
+            )
+          for: 15s
+          labels:
+            severity: warning
+            kubemedic: enabled
+            fault_case: F01
+            workload: crashloop-demo
+            workload_kind: Deployment
+          annotations:
+            summary: KubeMedic F01 CrashLoopBackOff
+            description: 容器持续异常退出并发生重复重启
+            expected_root_cause_code: CONTAINER_CRASH_LOOP_BACKOFF

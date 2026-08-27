@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: kubemedic
+  namespace: fault-lab
+  labels:
+    kubemedic: enabled
+    release: monitoring
+spec:
+  route:
+    receiver: kubemedic-webhook
+    groupBy:
+      - alertname
+      - namespace
+      - pod
+    groupWait: 5s
+    groupInterval: 15s
+    repeatInterval: 30m
+    matchers:
+      - name: kubemedic
+        value: enabled
+        matchType: "="
+  receivers:
+    - name: kubemedic-webhook
+      webhookConfigs:
+        - url: http://kubemedic.kubemedic.svc.cluster.local:5001/api/v1/alerts/webhook
+          sendResolved: true

@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crashloop-demo
+  namespace: fault-lab
+  labels:
+    app: crashloop-demo
+    kubemedic-scenario: F01
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crashloop-demo
+  template:
+    metadata:
+      labels:
+        app: crashloop-demo
+        kubemedic-scenario: F01
+    spec:
+      containers:
+        - name: crashloop
+          image: quay.io/prometheus/node-exporter:v1.12.1-distroless
+          imagePullPolicy: IfNotPresent
+          args:
+            - --kubemedic-invalid-flag
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi

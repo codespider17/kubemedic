@@ -1,0 +1,11 @@
+id: F01
+name: CrashLoopBackOff
+description: 容器参数错误导致进程持续退出并进入 CrashLoopBackOff
+namespace: fault-lab
+workload_kind: Deployment
+workload_name: crashloop-demo
+container_name: crashloop
+alert_name: KubeMedicCrashLoopBackOff
+expected_root_cause_code: CONTAINER_CRASH_LOOP_BACKOFF
+risk_level: low
+automatic_recovery: false
