@@ -20,7 +20,7 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="KubeMedic",
-    version="0.6.0",
+    version="0.6.2",
     description="Kubernetes incident investigation service",
     lifespan=lifespan,
 )
