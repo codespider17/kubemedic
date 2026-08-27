@@ -264,3 +264,23 @@ kubectl -n kubemedic port-forward service/kubemedic 5001:5001
 针对 kubelet 指数退避造成的 waiting-reason 指标抖动，告警规则采用精确状态与“异常退出、重启次数、Ready 状态”的复合条件，并归一化动态标签。最终规则持续验证 954 秒，期间未发生错误恢复或重复报告。
 
 修复 Incident workload 标签映射问题并发布 `kubemedic:0.6.1`，完整测试共 27 个。详细证据见 `fault-lab/results/F01-result.md`。
+
+## M10：自动评测与周期一致性
+
+新增只读自动评测框架，通过 `fault-lab/evaluate.py` 读取场景期望结果，并结合 Incident、Evidence、Analyzer 和 Report API，自动计算根因 Top-1/Top-3 命中、证据完整性、分析耗时、DeepSeek Token 用量、恢复状态及最终通过结果。
+
+评测器按照 Incident 最新一次 `RECEIVED -> REPORTED` 状态周期过滤 Evidence，避免同一 Incident 多次重开后将不同分析周期的数据混合统计。F01 实测中，Incident 累计保存 18 条 Evidence，最新分析周期正确筛选出 6 条 Evidence，`cycle_consistent=true`。
+
+F01 CrashLoopBackOff 自动评测结果：
+
+- 根因 Top-1 命中：通过
+- 根因 Top-3 命中：通过
+- 必需证据完整性：通过
+- 最新周期一致性：通过
+- 分析模式：DeepSeek
+- 模型：`deepseek-v4-flash`
+- 实际 Token 用量：7485
+- 故障恢复验证：通过
+- 最终结果：`passed=true`
+
+当前 M10 完成的是对已有故障实验进行无副作用的自动评分。自动注入、等待告警、恢复和清理的实验编排将在后续阶段实现。

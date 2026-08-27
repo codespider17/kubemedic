@@ -40,3 +40,15 @@ Prometheus 测试告警成功进入 firing，Alertmanager 运行配置成功加�
 修复 Incident Manager 的 workload 标签优先级，移除 Prometheus job 候选，发布 `kubemedic:0.6.1`。定向测试6个、完整测试27个全部通过，并通过容器内临时 SQLite 验证新映射逻辑。
 
 稳定性 Incident 跨越 fingerprint Schema 升级，升级前后指纹不同，resolved 回调无法关联旧 Incident。在确认工作负载、Prometheus 和 Alertmanager 均恢复后，通过状态机服务执行一次性人工协调并保留审计事件，未将该次协调记录为自动恢复。
+
+## 2026-08-27 M10：自动评测与周期一致性
+
+新增 `app/evaluation.py`、`fault-lab/evaluate.py` 和 `tests/test_evaluation.py`，实现基于场景期望、Incident、Evidence、Analyzer 和 Report 的只读自动评测。
+
+评测器按照最新一次 `RECEIVED -> REPORTED` 状态周期筛选证据，同时输出 Incident 累计证据数和当前周期证据数，避免同一 Incident 多次重开后发生跨周期数据混算。
+
+使用 Incident `inc-637b687d44274d57` 对 F01 CrashLoopBackOff 进行严格评测。Incident 累计 Evidence 为 18 条，最新周期 Evidence 为 6 条，`cycle_consistent=true`；根因 Top-1、Top-3、必需证据完整性、DeepSeek 报告及恢复状态全部通过。
+
+评测报告记录模型 `deepseek-v4-flash` 的实际 Token 用量为 7485，最终结果为 `passed=true`。完整回归共 31 个测试通过，Ruff 和依赖完整性检查通过。
+
+本阶段只实现对已有实验结果的自动评分，不包含自动故障注入和恢复编排。
